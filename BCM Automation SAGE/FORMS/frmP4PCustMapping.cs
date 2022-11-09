@@ -19,7 +19,7 @@ namespace BCM_Automation_SAGE.FORMS
         string SQL, QueryFilter;
         DataTable DT;
         frmError error = new frmError();
-        int CustID, SNo, GLAccount, TaxRate = 0;
+        int SCRGLAccount, SCRTaxRate, P4PGLAccount, P4PTaxRate = 0;
         double QtyTotal = 0;
 
         public frmP4PCustMapping()
@@ -56,7 +56,7 @@ namespace BCM_Automation_SAGE.FORMS
             {
                 txtQ1.Text = loadTargetsPerQtr(1, dtEnd.Value.Year, Convert.ToInt32(cboCust.SelectedValue)).ToString();
 
-                if (QtyTotal >= Convert.ToDouble(txtQ1.Text)) txtQtyAboveTarget.Text = QtyTotal.ToString("n2");                 txtQtyAboveTarget.Text = (QtyTotal - Convert.ToDouble(txtQ1.Text)).ToString("n2");
+                if (QtyTotal >= Convert.ToDouble(txtQ1.Text)) txtQtyAboveTarget.Text = QtyTotal.ToString("n2");                 //txtQtyAboveTarget.Text = (QtyTotal - Convert.ToDouble(txtQ1.Text)).ToString("n2");
             }
 
         }
@@ -229,7 +229,7 @@ namespace BCM_Automation_SAGE.FORMS
         {
             if (Convert.ToDouble(txtQtyAboveTarget.Text) > 0)
             {
-                double rebateApplicable = loadRebateApplicable();
+                double rebateApplicable = (loadRebateApplicable() * 100)/116;
                 txtRebateApplicable.Text = rebateApplicable.ToString();
                 txtTotalRebate.Text = (rebateApplicable * Convert.ToDouble(txtQtyAboveTarget.Text)).ToString("n2");
             }
@@ -347,14 +347,14 @@ namespace BCM_Automation_SAGE.FORMS
 
         private void LoadSettings()
         {
-            SQL = "SELECT ISNULL(GLAccountLink, 0) GLAccountLink, ISNULL(TaxRateID, 0) TaxRateID FROM WIZ_BMCL_SETTINGS";
+            SQL = "SELECT ISNULL(GLAccountLink, 0) GLAccountLink, ISNULL(TaxRateID, 0) TaxRateID, ISNULL(SCRGLAccountLink,0) SCRGLAccountLink, ISNULL(SCRTaxRateID,0) SCRTaxRateID FROM WIZ_BMCL_SETTINGS";
             DataTable DT = new DataTable();
             LoadDatatable(SQL, DT);
 
             if (DT.Rows.Count > 0)
             {
-                GLAccount = Convert.ToInt32(DT.Rows[0]["GLAccountLink"]);
-                TaxRate = Convert.ToInt32(DT.Rows[0]["TaxRateID"]);
+                P4PGLAccount = Convert.ToInt32(DT.Rows[0]["GLAccountLink"]);
+                P4PTaxRate = Convert.ToInt32(DT.Rows[0]["TaxRateID"]);
             }
         }
 
@@ -371,10 +371,10 @@ namespace BCM_Automation_SAGE.FORMS
             //OD.UserFields["ItemCode"] = ItemCode;
             //OD.UserFields["Name"] = ItemName;
             CN.Detail.Add(OD);          
-            OD.GLAccount = new GLAccount( GLAccount);//Use the GLAccount Item constructor to specify a Account
+            OD.GLAccount = new GLAccount(P4PGLAccount);//Use the GLAccount Item constructor to specify a Account
             //OD.GLAccount = new GLAccount(;//Use the 
             OD.Quantity = 1;
-            OD.TaxType = new TaxRate(TaxRate);
+            OD.TaxType = new TaxRate(P4PTaxRate);
             OD.ToProcess = OD.Quantity;
             OD.UnitSellingPrice = Amt;
 

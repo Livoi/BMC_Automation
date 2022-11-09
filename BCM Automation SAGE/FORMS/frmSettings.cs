@@ -17,15 +17,6 @@ namespace BCM_Automation_SAGE.FORMS
     public partial class frmSettings : Form
     {
         string SQL;
-        DataTable DT;
-        string PwdKey = "65f02fab40f56c8e409b121965fa1d657a80d237fabacab95f9c59f8f967becb";
-        string FPath = "";
-        string SERVER = "";
-        string User = "";
-        string PWD = "";
-        string PORT = "";
-        string SSL = "";
-        string DEFSETTING = "";
 
         public frmSettings()
         {
@@ -42,41 +33,51 @@ namespace BCM_Automation_SAGE.FORMS
         private void loadGLAccounts()
         {
             SQL = "select AccountLink, Description from Accounts where ActiveAccount=1";
-            LoadCombo(SQL, cboGLAccounts, "AccountLink", "Description", true, false);
-            cboGLAccounts.SelectedIndex = -1;
+            LoadCombo(SQL, cboP4PGLAccounts, "AccountLink", "Description", true, false);
+            cboP4PGLAccounts.SelectedIndex = -1;
+
+            LoadCombo(SQL, cboSCRGLAccounts, "AccountLink", "Description", true, false);
+            cboSCRGLAccounts.SelectedIndex = -1;
         }
 
         private void loadTaxRate()
         {
             SQL = "select code,Description from TaxRate";
-            LoadCombo(SQL, cboTaxRate, "code", "Description", true, false);
-            cboTaxRate.SelectedIndex = -1;
+            LoadCombo(SQL, cboP4PTaxRate, "code", "Description", true, false);
+            cboP4PTaxRate.SelectedIndex = -1;
+
+            LoadCombo(SQL, cboSCRTaxRate, "code", "Description", true, false);
+            cboSCRTaxRate.SelectedIndex = -1;
         }
 
         private void initializeControls()
         {
-            cboGLAccounts.SelectedIndex = -1;
-            cboTaxRate.SelectedIndex = -1;
+            cboP4PGLAccounts.SelectedIndex = -1;
+            cboP4PTaxRate.SelectedIndex = -1;
+            cboSCRGLAccounts.SelectedIndex = -1;
+            cboSCRTaxRate.SelectedIndex = -1;
         }
 
         private void LoadSettings()
         {
-            SQL = "SELECT ISNULL(GLAccountLink, 0) GLAccountLink, ISNULL(TaxRateID, 0) TaxRateID FROM WIZ_BMCL_SETTINGS";
+            SQL = "SELECT ISNULL(GLAccountLink, 0) GLAccountLink, ISNULL(TaxRateID, 0) TaxRateID, ISNULL(SCRGLAccountLink,0) SCRGLAccountLink, ISNULL(SCRTaxRateID,0) SCRTaxRateID FROM WIZ_BMCL_SETTINGS";
             DataTable DT = new DataTable();
             LoadDatatable(SQL, DT);
 
             if(DT.Rows.Count> 0)
             {
-                cboGLAccounts.SelectedValue = DT.Rows[0]["GLAccountLink"];
-                cboTaxRate.SelectedValue = DT.Rows[0]["TaxRateID"];
+                cboP4PGLAccounts.SelectedValue = DT.Rows[0]["GLAccountLink"];
+                cboP4PTaxRate.SelectedValue = DT.Rows[0]["TaxRateID"];
+                cboSCRGLAccounts.SelectedValue = DT.Rows[0]["SCRGLAccountLink"];
+                cboSCRTaxRate.SelectedValue = DT.Rows[0]["SCRTaxRateID"];
             }
         }
 
         private void btnSave_Click(object sender, EventArgs e)
         {
-            if(cboGLAccounts.SelectedIndex != -1 && cboTaxRate.SelectedIndex !=-1)
+            if(cboP4PGLAccounts.SelectedIndex != -1 && cboP4PTaxRate.SelectedIndex !=-1)
             {
-                SQL = "IF NOT EXISTS (SELECT 1 FROM WIZ_BMCL_SETTINGS) BEGIN INSERT INTO WIZ_BMCL_SETTINGS(GLAccountLink, TaxRateID) VALUES ("+ cboGLAccounts.SelectedValue + ","+ cboTaxRate.SelectedValue + ") END ELSE BEGIN UPDATE WIZ_BMCL_SETTINGS SET GLAccountLink ="+ cboGLAccounts.SelectedValue + " , TaxRateID=" + cboTaxRate.SelectedValue + " END";
+                SQL = "IF NOT EXISTS (SELECT 1 FROM WIZ_BMCL_SETTINGS) BEGIN INSERT INTO WIZ_BMCL_SETTINGS(GLAccountLink, TaxRateID, SCRGLAccountLink, SCRTaxRateID) VALUES (" + cboP4PGLAccounts.SelectedValue + ","+ cboP4PTaxRate.SelectedValue + "," + cboSCRGLAccounts.SelectedValue + "," + cboSCRTaxRate.SelectedValue + ") END ELSE BEGIN UPDATE WIZ_BMCL_SETTINGS SET GLAccountLink =" + cboP4PGLAccounts.SelectedValue + " , TaxRateID=" + cboP4PTaxRate.SelectedValue + ",SCRGLAccountLink =" + cboSCRGLAccounts.SelectedValue + ",SCRTaxRateID =" + cboSCRTaxRate.SelectedValue + "  END";
 
                 if (ExecuteQuery(SQL)) MessageBox.Show("Record saved succesfully");
 

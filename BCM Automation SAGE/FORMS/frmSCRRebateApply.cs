@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Pastel.Evolution;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -17,7 +18,7 @@ namespace BCM_Automation_SAGE.FORMS
         string SQL, QueryFilter;
         DataTable DT;
         frmError error = new frmError();
-        int CustID, SNo = 0;
+        int SCRGLAccount, SCRTaxRate, P4PGLAccount, P4PTaxRate = 0;
         double QtyTotal = 0;
 
         public frmSCRRebateApply()
@@ -63,32 +64,29 @@ namespace BCM_Automation_SAGE.FORMS
 
                     if (Convert.ToBoolean(dgSCRRebate.Rows[i].Cells["chk"].Value))
                     {
-                        if (P4PAmount > 0)
+
+                        if (frmP4PCustMapping.validateP4PAmt(InvTotExcl, P4PAmount, RebateValue))
                         {
-                            if (frmP4PCustMapping.validateP4PAmt(InvTotExcl, P4PAmount, RebateValue))
-                            {
-                                P4PAmountTotal += P4PAmount;
-                                ExclTotal += InvTotExcl;
-                                VATTotal += VAT;
-                                IncvTotal += Incv;
-                                RebateTotal += RebateValue;
+                            P4PAmountTotal += P4PAmount;
+                            ExclTotal += InvTotExcl;
+                            VATTotal += VAT;
+                            IncvTotal += Incv;
+                            RebateTotal += RebateValue;
 
 
-                            }
-                            else
-                            {
-                                MessageBox.Show(" P4P Amount + SCR Amount cannot be greater than The excl amount", "P4P Customer Mapping Form", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                                //dgSCRRebate.Rows[i].Cells["chk"].Selected = false;
-                                (dgSCRRebate.Rows[i].Cells["chk"] as DataGridViewCheckBoxCell).Value = false;
+                        }
+                        else
+                        {
+                            MessageBox.Show(" P4P Amount + SCR Amount cannot be greater than The excl amount", "P4P Customer Mapping Form", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            //dgSCRRebate.Rows[i].Cells["chk"].Selected = false;
+                            (dgSCRRebate.Rows[i].Cells["chk"] as DataGridViewCheckBoxCell).Value = false;
 
-                                //dgSCRRebate_CellValueChanged(sender, e);
+                            //dgSCRRebate_CellValueChanged(sender, e);
 
-                                return;
-                            }
+                            return;
                         }
 
-
-                    }                   
+                    }
 
                 }
 
@@ -125,7 +123,8 @@ namespace BCM_Automation_SAGE.FORMS
 
                         if (ExecuteQuery(SQL))
                         {
-                            y++;
+                            createCreditNoteSage(InvoiceID, P4PRebateAmt);
+                             y++;
 
                         }
                     }
@@ -142,9 +141,74 @@ namespace BCM_Automation_SAGE.FORMS
             }
         }
 
+        private void createCreditNoteSage(int InvoiceID, double Rebate)
+        {
+            SQL = "select i.AccountID [Cust ID], i.AutoIndex [Invoice ID],iStockCodeID, s.Code, s.Description_1,  (l.fQtyLastProcessLineTotExcl/i.InvTotExcl) * " + Rebate + " [Amount], (l.fQtyLastProcessLineTotIncl/i.InvTotIncl) * " + Rebate + " from _btblInvoiceLines l inner join StkItem s on l.iStockCodeID = s.StockLink inner join InvNum i on i.AutoIndex = l.iInvoiceID where iInvoiceID =" + InvoiceID;
+
+            DT = new DataTable();
+            LoadDatatable(SQL, DT);
+
+            if (DT.Rows.Count > 0)
+            {
+                int CustID, InvID, ItemCode = 0;
+                string ItemName = string.Empty;
+                double Amt = 0;
+                foreach (DataRow r in DT.Rows)
+                {
+
+                    CustID = Convert.ToInt32(r["Cust ID"].ToString());
+                    InvID = Convert.ToInt32(r["Invoice ID"].ToString());
+                    Amt = Convert.ToDouble(r["Amount"].ToString());
+                    ItemCode = Convert.ToInt32(r["Code"].ToString());
+                    ItemName = r["Description_1"].ToString();
+
+                    creditNote(CustID, Amt, InvID, ItemCode, ItemName);
+
+                }
+            }
+
+        }
+
+        private void LoadSettings()
+        {
+            SQL = "SELECT ISNULL(GLAccountLink, 0) GLAccountLink, ISNULL(TaxRateID, 0) TaxRateID, ISNULL(SCRGLAccountLink,0) SCRGLAccountLink, ISNULL(SCRTaxRateID,0) SCRTaxRateID FROM WIZ_BMCL_SETTINGS";
+            DataTable DT = new DataTable();
+            LoadDatatable(SQL, DT);
+
+            if (DT.Rows.Count > 0)
+            {
+                SCRGLAccount = Convert.ToInt32(DT.Rows[0]["GLAccountLink"]);
+                SCRTaxRate = Convert.ToInt32(DT.Rows[0]["TaxRateID"]);
+            }
+        }
+
+        private void creditNote(int CustID, Double Amt, int InvID, int ItemCode, string ItemName)
+        {
+            //MessageBox.Show(GLAccount.ToString());
+            CreditNote CN = new CreditNote();
+            CN.Customer = new Customer(CustID);
+            CN.InvoiceDate = DateTime.Now;// choose to set the 
+
+            OrderDetail OD = new OrderDetail();
+
+            OD = new OrderDetail();
+            //OD.UserFields["ItemCode"] = ItemCode;
+            //OD.UserFields["Name"] = ItemName;
+            CN.Detail.Add(OD);
+            OD.GLAccount = new GLAccount(SCRGLAccount);//Use the GLAccount Item constructor to specify a Account
+            //OD.GLAccount = new GLAccount(;//Use the 
+            OD.Quantity = 1;
+            OD.TaxType = new TaxRate(SCRTaxRate);
+            OD.ToProcess = OD.Quantity;
+            OD.UnitSellingPrice = Amt;
+
+            CN.Process();
+        }
+
         private void frmSCRRebateApply_Load(object sender, EventArgs e)
         {
             loadSCRRebate();
+            LoadSettings();
         }
         private void loadSCRRebate()
         {
