@@ -1,0 +1,228 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{2FFF2B16-EE23-409B-A605-626D5DE1F5A8}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>BCM_Automation_SAGE</RootNamespace>
+    <AssemblyName>BCM Automation SAGE</AssemblyName>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>BCM_Automation_SAGE.Program</StartupObject>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="CrystalDecisions.CrystalReports.Design, Version=13.0.4000.0, Culture=neutral, PublicKeyToken=692fbea5521e1304, processorArchitecture=MSIL" />
+    <Reference Include="CrystalDecisions.CrystalReports.Engine, Version=13.0.4000.0, Culture=neutral, PublicKeyToken=692fbea5521e1304, processorArchitecture=MSIL" />
+    <Reference Include="CrystalDecisions.Shared, Version=13.0.4000.0, Culture=neutral, PublicKeyToken=692fbea5521e1304, processorArchitecture=MSIL" />
+    <Reference Include="Microsoft.VisualBasic" />
+    <Reference Include="Pastel.Evolution, Version=10.1.0.0, Culture=neutral, PublicKeyToken=1a4bc88fe3044688, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\Pastel.Evolution.dll</HintPath>
+    </Reference>
+    <Reference Include="Pastel.Evolution.Common, Version=10.1.0.0, Culture=neutral, PublicKeyToken=1a4bc88fe3044688, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\Pastel.Evolution.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.DirectoryServices" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+    <Reference Include="WIZLICENCE, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\WIZLICENCE.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Form1.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form1.Designer.cs">
+      <DependentUpon>Form1.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FORMS\frmDashboard.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FORMS\frmDashboard.Designer.cs">
+      <DependentUpon>frmDashboard.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FORMS\frmError.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FORMS\frmError.Designer.cs">
+      <DependentUpon>frmError.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FORMS\frmP4PCustKPI.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FORMS\frmP4PCustKPI.Designer.cs">
+      <DependentUpon>frmP4PCustKPI.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FORMS\frmP4PCustMapping.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FORMS\frmP4PCustMapping.Designer.cs">
+      <DependentUpon>frmP4PCustMapping.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FORMS\frmRegister.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FORMS\frmRegister.Designer.cs">
+      <DependentUpon>frmRegister.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FORMS\frmSCRCustMap.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FORMS\frmSCRCustMap.Designer.cs">
+      <DependentUpon>frmSCRCustMap.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FORMS\frmSCRRebateApply.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FORMS\frmSCRRebateApply.Designer.cs">
+      <DependentUpon>frmSCRRebateApply.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FORMS\frmSettings.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FORMS\frmSettings.Designer.cs">
+      <DependentUpon>frmSettings.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MODULES\CommonFunctions.cs" />
+    <Compile Include="MODULES\Simple3Des.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="Form1.resx">
+      <DependentUpon>Form1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FORMS\frmDashboard.resx">
+      <DependentUpon>frmDashboard.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FORMS\frmError.resx">
+      <DependentUpon>frmError.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FORMS\frmP4PCustKPI.resx">
+      <DependentUpon>frmP4PCustKPI.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FORMS\frmP4PCustMapping.resx">
+      <DependentUpon>frmP4PCustMapping.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FORMS\frmRegister.resx">
+      <DependentUpon>frmRegister.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FORMS\frmSCRCustMap.resx">
+      <DependentUpon>frmSCRCustMap.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FORMS\frmSCRRebateApply.resx">
+      <DependentUpon>frmSCRRebateApply.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FORMS\frmSettings.resx">
+      <DependentUpon>frmSettings.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Resources\Accept.png" />
+    <Content Include="Resources\Add.16.2.png" />
+    <Content Include="Resources\CANCEL16.PNG" />
+    <Content Include="Resources\cash.png" />
+    <Content Include="Resources\change.png" />
+    <Content Include="Resources\DELETE16.PNG" />
+    <Content Include="Resources\delivery-removebg-preview %281%29.png" />
+    <Content Include="Resources\delivery.png" />
+    <Content Include="Resources\delivery1.png" />
+    <Content Include="Resources\delivery2.png" />
+    <Content Include="Resources\delivery3.png" />
+    <Content Include="Resources\import-32x32.png" />
+    <Content Include="Resources\kempas.png" />
+    <Content Include="Resources\loupe.png" />
+    <Content Include="Resources\manager.png" />
+    <Content Include="Resources\new-save %282%29.jpg" />
+    <Content Include="Resources\new-save.png" />
+    <Content Include="Resources\payment-method.png" />
+    <Content Include="Resources\payment.png" />
+    <Content Include="Resources\Print.png" />
+    <Content Include="Resources\save-button.jpg" />
+    <Content Include="Resources\SAVE.png" />
+    <Content Include="Resources\Search.png" />
+    <Content Include="Resources\Search1.png" />
+    <Content Include="Resources\sellect_all.png" />
+    <Content Include="Resources\settings.png" />
+    <Content Include="Resources\sm-save-1.jpg" />
+    <Content Include="Resources\sm-save.jpg" />
+    <Content Include="Resources\unsellect_all.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <COMReference Include="AcroPDFLib">
+      <Guid>{05BFD3F1-6319-4F30-B752-C7A22889BCC4}</Guid>
+      <VersionMajor>1</VersionMajor>
+      <VersionMinor>0</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>tlbimp</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
+    <COMReference Include="AxAcroPDFLib">
+      <Guid>{05BFD3F1-6319-4F30-B752-C7A22889BCC4}</Guid>
+      <VersionMajor>1</VersionMajor>
+      <VersionMinor>0</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>aximp</WrapperTool>
+      <Isolated>False</Isolated>
+    </COMReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
