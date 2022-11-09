@@ -150,8 +150,8 @@ namespace BCM_Automation_SAGE.FORMS
 
             if (DT.Rows.Count > 0)
             {
-                int CustID, InvID, ItemCode = 0;
-                string ItemName = string.Empty;
+                int CustID, InvID = 0;
+                string ItemName, ItemCode = string.Empty;
                 double Amt = 0;
                 foreach (DataRow r in DT.Rows)
                 {
@@ -159,10 +159,10 @@ namespace BCM_Automation_SAGE.FORMS
                     CustID = Convert.ToInt32(r["Cust ID"].ToString());
                     InvID = Convert.ToInt32(r["Invoice ID"].ToString());
                     Amt = Convert.ToDouble(r["Amount"].ToString());
-                    ItemCode = Convert.ToInt32(r["Code"].ToString());
+                    ItemCode = r["Code"].ToString();
                     ItemName = r["Description_1"].ToString();
 
-                    creditNote(CustID, Amt, InvID, ItemCode, ItemName);
+                    creditNote(CustID, Amt, InvID, ItemCode, ItemName, SCRGLAccount, SCRTaxRate);
 
                 }
             }
@@ -181,30 +181,7 @@ namespace BCM_Automation_SAGE.FORMS
                 SCRTaxRate = Convert.ToInt32(DT.Rows[0]["TaxRateID"]);
             }
         }
-
-        private void creditNote(int CustID, Double Amt, int InvID, int ItemCode, string ItemName)
-        {
-            //MessageBox.Show(GLAccount.ToString());
-            CreditNote CN = new CreditNote();
-            CN.Customer = new Customer(CustID);
-            CN.InvoiceDate = DateTime.Now;// choose to set the 
-
-            OrderDetail OD = new OrderDetail();
-
-            OD = new OrderDetail();
-            //OD.UserFields["ItemCode"] = ItemCode;
-            //OD.UserFields["Name"] = ItemName;
-            CN.Detail.Add(OD);
-            OD.GLAccount = new GLAccount(SCRGLAccount);//Use the GLAccount Item constructor to specify a Account
-            //OD.GLAccount = new GLAccount(;//Use the 
-            OD.Quantity = 1;
-            OD.TaxType = new TaxRate(SCRTaxRate);
-            OD.ToProcess = OD.Quantity;
-            OD.UnitSellingPrice = Amt;
-
-            CN.Process();
-        }
-
+        
         private void frmSCRRebateApply_Load(object sender, EventArgs e)
         {
             loadSCRRebate();

@@ -18,6 +18,7 @@ using Microsoft.VisualBasic; // Install-Package Microsoft.VisualBasic
 using Microsoft.VisualBasic.CompilerServices; // Install-Package Microsoft.VisualBasic
 using BCM_Automation_SAGE.FORMS;
 using CrystalDecisions.CrystalReports.Engine;
+using Pastel.Evolution;
 
 namespace BCM_Automation_SAGE.MODULES
 {
@@ -94,7 +95,30 @@ namespace BCM_Automation_SAGE.MODULES
             cryRpt.PrintOptions.PrinterName = CommonFunctions.Default_Printer;
             cryRpt.PrintToPrinter(1, false, 0, 0);
             
-        }       
+        }
+
+        public static void creditNote(int CustID, Double Amt, int InvID, string ItemCode, string ItemName, int GLAccount, int TaxRate)
+        {
+            //MessageBox.Show(GLAccount.ToString());
+            CreditNote CN = new CreditNote();
+            CN.Customer = new Customer(CustID);
+            CN.InvoiceDate = DateTime.Now;// choose to set the 
+
+            OrderDetail OD = new OrderDetail();
+
+            OD = new OrderDetail();
+            //OD.UserFields["ItemCode"] = ItemCode;
+            //OD.UserFields["Name"] = ItemName;
+            CN.Detail.Add(OD);
+            OD.GLAccount = new GLAccount(GLAccount);//Use the GLAccount Item constructor to specify a Account
+            //OD.GLAccount = new GLAccount(;//Use the 
+            OD.Quantity = 1;
+            OD.TaxType = new TaxRate(TaxRate);
+            OD.ToProcess = OD.Quantity;
+            OD.UnitSellingPrice = Amt;
+
+            CN.Process();
+        }
 
         public static double ConvertToMtr(string FromUnit, double Qty)
         {
