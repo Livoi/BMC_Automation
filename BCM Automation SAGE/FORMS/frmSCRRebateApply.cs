@@ -24,6 +24,9 @@ namespace BCM_Automation_SAGE.FORMS
         public frmSCRRebateApply()
         {
             InitializeComponent();
+            DatabaseContext.CreateCommonDBConnection(ConnCOMM);
+            DatabaseContext.SetLicense("DE12111058", "2523370");
+            DatabaseContext.CreateConnection(ConnSAGE);
         }
 
         private void cmdExit_Click(object sender, EventArgs e)
@@ -73,12 +76,10 @@ namespace BCM_Automation_SAGE.FORMS
                             IncvTotal += Incv;
                             RebateTotal += RebateValue;
 
-
                         }
                         else
                         {
                             MessageBox.Show(" P4P Amount + SCR Amount cannot be greater than The excl amount", "P4P Customer Mapping Form", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                            //dgSCRRebate.Rows[i].Cells["chk"].Selected = false;
                             (dgSCRRebate.Rows[i].Cells["chk"] as DataGridViewCheckBoxCell).Value = false;
 
                             //dgSCRRebate_CellValueChanged(sender, e);
@@ -117,14 +118,14 @@ namespace BCM_Automation_SAGE.FORMS
                     {
 
                         int InvoiceID = Convert.ToInt32(dgSCRRebate.Rows[i].Cells["Invoice ID"].Value);
-                        double P4PRebateAmt = Convert.ToInt32(dgSCRRebate.Rows[i].Cells["Rebate Value"].Value);
+                        double P4PRebateAmt = Convert.ToDouble(dgSCRRebate.Rows[i].Cells["Rebate Value"].Value);
 
                         SQL = "INSERT INTO [dbo].[WIZ_BMCL_SCR_REBATES] ([InvID],[RebateAmt]) VALUES(" + InvoiceID + "," + P4PRebateAmt + ")";
 
                         if (ExecuteQuery(SQL))
                         {
                             createCreditNoteSage(InvoiceID, P4PRebateAmt);
-                             y++;
+                            y++;
 
                         }
                     }
@@ -150,23 +151,70 @@ namespace BCM_Automation_SAGE.FORMS
 
             if (DT.Rows.Count > 0)
             {
-                int CustID, InvID = 0;
-                string ItemName, ItemCode = string.Empty;
-                double Amt = 0;
-                foreach (DataRow r in DT.Rows)
-                {
+                creditNote_(DT);
 
-                    CustID = Convert.ToInt32(r["Cust ID"].ToString());
-                    InvID = Convert.ToInt32(r["Invoice ID"].ToString());
-                    Amt = Convert.ToDouble(r["Amount"].ToString());
-                    ItemCode = r["Code"].ToString();
-                    ItemName = r["Description_1"].ToString();
+                //int CustID, InvID = 0;
+                //string ItemName, ItemCode = string.Empty;
+                //double Amt = 0;
+                //foreach (DataRow r in DT.Rows)
+                //{
 
-                    creditNote(CustID, Amt, InvID, ItemCode, ItemName, SCRGLAccount, SCRTaxRate);
+                //    CustID = Convert.ToInt32(r["Cust ID"].ToString());
+                //    InvID = Convert.ToInt32(r["Invoice ID"].ToString());
+                //    Amt = Convert.ToDouble(r["Amount"].ToString());
+                //    ItemCode = r["Code"].ToString();
+                //    ItemName = r["Description_1"].ToString();
+                //    creditNote(CustID, Amt, InvID, ItemCode, ItemName, SCRGLAccount, SCRTaxRate);
 
-                }
+                //}
             }
 
+        }
+
+        private void creditNote(int CustID, Double Amt, int InvID, string ItemCode, string ItemName, int GLAccount, int TaxRate)
+        {
+            //MessageBox.Show(GLAccount.ToString());
+            CreditNote CN = new CreditNote();
+            CN.Customer = new Customer(CustID);
+            CN.InvoiceDate = DateTime.Now;// choose to set the 
+
+            OrderDetail OD = new OrderDetail();
+            OD = new OrderDetail();
+            //OD.UserFields["ItemCode"] = ItemCode;
+            //OD.UserFields["Name"] = ItemName;
+            CN.Detail.Add(OD);
+            OD.GLAccount = new GLAccount(SCRGLAccount);//Use the GLAccount Item constructor to specify a Account
+            //OD.GLAccount = new GLAccount(;//Use the 
+            OD.Quantity = 1;
+            OD.TaxType = new TaxRate(TaxRate);
+            OD.ToProcess = OD.Quantity;
+            OD.UnitSellingPrice = Amt;
+
+            CN.Process();
+        }
+
+        private void creditNote_(DataTable DT)
+        {        
+            CreditNote CN = new CreditNote();
+            CN.Customer = new Customer((int)DT.Rows[0]["Cust ID"]);
+            CN.InvoiceDate = DateTime.Now;// choose to set the 
+
+            OrderDetail OD = new OrderDetail();
+            
+            foreach (DataRow r in DT.Rows)
+            {
+                OD = new OrderDetail();
+                CN.Detail.Add(OD);
+                OD.UserFields["ucIDInvTxCMItemCode"] = r["Code"].ToString();
+                OD.UserFields["ucIDInvTxCMItemDesc"] = r["Description_1"].ToString();
+                OD.GLAccount = new GLAccount(SCRGLAccount);
+                OD.Quantity = 1;
+                OD.TaxType = new TaxRate(SCRTaxRate);
+                OD.ToProcess = OD.Quantity;
+                OD.UnitSellingPrice = Convert.ToDouble(r["Amount"].ToString());
+            }
+
+            CN.Process();
         }
 
         private void LoadSettings()
@@ -181,7 +229,7 @@ namespace BCM_Automation_SAGE.FORMS
                 SCRTaxRate = Convert.ToInt32(DT.Rows[0]["TaxRateID"]);
             }
         }
-        
+
         private void frmSCRRebateApply_Load(object sender, EventArgs e)
         {
             loadSCRRebate();
@@ -192,8 +240,8 @@ namespace BCM_Automation_SAGE.FORMS
             QueryFilter = " convert(varchar(10), I.InvDate, 112) BETWEEN '" + dtStart.Value.ToString("yyyyMMdd", CultureInfo.InvariantCulture) + "' AND '" + dtEnd.Value.ToString("yyyyMMdd", CultureInfo.InvariantCulture) + "' ";
 
             QtyTotal = 0;
-            SQL = "SELECT  C.Name [Customer],  i.AutoIndex [Invoice ID], i.InvDate [Date], i.InvNumber, i.InvTotExcl, i.InvTotTax, i.InvTotIncl, SUM(l.fQtyLastProcess) [Qty], CASE WHEN M.RebatePerCase > 0 THEN M.RebatePerCase WHEN M.RebatePercent > 0 THEN  M.RebatePercent  END [Rebate Rate], CASE WHEN M.RebatePerCase > 0 THEN SUM(l.fQtyLastProcess) * M.RebatePerCase WHEN M.RebatePercent > 0 THEN  (M.RebatePercent * i.InvTotExcl)/100 END [Rebate Value], ISNULL(R.P4PRebateAmt,0) [P4P Value]  FROM InvNum i INNER JOIN _btblInvoiceLines l ON i.AutoIndex = L.iInvoiceID INNER JOIN WIZ_BMCL_SCR_MAPPING M ON I.AccountID = M.CustID INNER JOIN client C ON c.DCLink = i.AccountID LEFT JOIN [dbo].[WIZ_BMCL_P4P_REBATES_APPLIED] R ON i.AutoIndex = R.InvoiceID WHERE i.DocType IN(0, 4) AND i.DocState = 4 AND i.AutoIndex NOT IN (SELECT InvID FROM [WIZ_BMCL_SCR_REBATES]) AND " + QueryFilter + " GROUP BY i.AutoIndex, i.InvNumber, i.InvDate, i.InvTotExcl, i.InvTotTax, i.InvTotIncl,  M.RebatePerCase,  M.RebatePercent, C.Name,  R.P4PRebateAmt";
-            LoadDataGrid(dgSCRRebate, SQL, "Invoice ID", "");
+            SQL = "SELECT  C.Name [Customer],  i.AutoIndex [Invoice ID], i.InvDate [Date], i.InvNumber, i.InvTotExcl, i.InvTotTax, i.InvTotIncl, SUM(l.fQtyLastProcess) [Qty], CASE WHEN M.RebatePerCase > 0 THEN ISNULL(M.RebatePerCase,0) WHEN M.RebatePercent > 0 THEN  ISNULL(M.RebatePercent,0) ELSE 0  END [Rebate Rate], CASE WHEN ISNULL(M.RebatePerCase,0) > 0 THEN CONVERT(DECIMAL(30,2),SUM(l.fQtyLastProcess) * ((ISNULL(M.RebatePerCase,0)*100)/116)) WHEN ISNULL(M.RebatePercent,0) > 0 THEN  (ISNULL(M.RebatePercent,0) * i.InvTotExcl)/100 ELSE 0 END [Rebate Value], ISNULL(R.P4PRebateAmt,0) [P4P Value]  FROM InvNum i INNER JOIN _btblInvoiceLines l ON i.AutoIndex = L.iInvoiceID LEFT JOIN WIZ_BMCL_SCR_MAPPING M ON I.AccountID = M.CustID INNER JOIN client C ON c.DCLink = i.AccountID LEFT JOIN [dbo].[WIZ_BMCL_P4P_REBATES_APPLIED] R ON i.AutoIndex = R.InvoiceID WHERE i.DocType IN(0, 4) AND i.DocState = 4 AND i.AutoIndex NOT IN (SELECT InvID FROM [WIZ_BMCL_SCR_REBATES]) AND " + QueryFilter + " GROUP BY i.AutoIndex, i.InvNumber, i.InvDate, i.InvTotExcl, i.InvTotTax, i.InvTotIncl,  M.RebatePerCase,  M.RebatePercent, C.Name,  R.P4PRebateAmt";
+            LoadDataGrid(dgSCRRebate, SQL, "Invoice ID", "Qty");
 
             if (dgSCRRebate.Rows.Count > 0)
             {

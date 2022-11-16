@@ -33,6 +33,7 @@ namespace BCM_Automation_SAGE.FORMS
             try
             {
                 LoadSettings();
+                
                 DatabaseContext.CreateCommonDBConnection(ConnCOMM);
                 DatabaseContext.SetLicense("DE12111058", "2523370");
                 DatabaseContext.CreateConnection(ConnSAGE);
@@ -56,7 +57,8 @@ namespace BCM_Automation_SAGE.FORMS
             {
                 txtQ1.Text = loadTargetsPerQtr(1, dtEnd.Value.Year, Convert.ToInt32(cboCust.SelectedValue)).ToString();
 
-                if (QtyTotal >= Convert.ToDouble(txtQ1.Text)) txtQtyAboveTarget.Text = QtyTotal.ToString("n2");                 //txtQtyAboveTarget.Text = (QtyTotal - Convert.ToDouble(txtQ1.Text)).ToString("n2");
+                if (QtyTotal >= Convert.ToDouble(txtQ1.Text)) txtQtyAboveTarget.Text = QtyTotal.ToString("n2");
+                txtQtyAboveTarget.Enabled = true;
             }
 
         }
@@ -75,7 +77,10 @@ namespace BCM_Automation_SAGE.FORMS
             {
                 txtQ2.Text = loadTargetsPerQtr(2, dtEnd.Value.Year, Convert.ToInt32(cboCust.SelectedValue)).ToString();
 
-                txtQtyAboveTarget.Text = (QtyTotal - Convert.ToDouble(txtQ2.Text)).ToString("n2");
+                //txtQtyAboveTarget.Text = (QtyTotal - Convert.ToDouble(txtQ2.Text)).ToString("n2");
+                if (QtyTotal >= Convert.ToDouble(txtQ2.Text)) txtQtyAboveTarget.Text = QtyTotal.ToString("n2");
+                txtQtyAboveTarget.Enabled = true;
+
             }
 
         }
@@ -87,7 +92,10 @@ namespace BCM_Automation_SAGE.FORMS
             {
                 txtQ3.Text = loadTargetsPerQtr(3, dtEnd.Value.Year, Convert.ToInt32(cboCust.SelectedValue)).ToString();
 
-                txtQtyAboveTarget.Text = (QtyTotal - Convert.ToDouble(txtQ3.Text)).ToString("n2");
+                //txtQtyAboveTarget.Text = (QtyTotal - Convert.ToDouble(txtQ3.Text)).ToString("n2");
+                if (QtyTotal >= Convert.ToDouble(txtQ3.Text)) txtQtyAboveTarget.Text = QtyTotal.ToString("n2");
+                txtQtyAboveTarget.Enabled = true;
+
             }
 
 
@@ -99,7 +107,10 @@ namespace BCM_Automation_SAGE.FORMS
             {
                 txtQ4.Text = loadTargetsPerQtr(4, dtEnd.Value.Year, Convert.ToInt32(cboCust.SelectedValue)).ToString();
 
-                txtQtyAboveTarget.Text = (QtyTotal - Convert.ToDouble(txtQ4.Text)).ToString("n2");
+                //txtQtyAboveTarget.Text = (QtyTotal - Convert.ToDouble(txtQ4.Text)).ToString("n2");
+                if (QtyTotal >= Convert.ToDouble(txtQ4.Text)) txtQtyAboveTarget.Text = QtyTotal.ToString("n2");
+                txtQtyAboveTarget.Enabled = true;
+
             }
 
 
@@ -230,7 +241,7 @@ namespace BCM_Automation_SAGE.FORMS
             if (Convert.ToDouble(txtQtyAboveTarget.Text) > 0)
             {
                 double rebateApplicable = (loadRebateApplicable() * 100)/116;
-                txtRebateApplicable.Text = rebateApplicable.ToString();
+                txtRebateApplicable.Text = rebateApplicable.ToString("n2");
                 txtTotalRebate.Text = (rebateApplicable * Convert.ToDouble(txtQtyAboveTarget.Text)).ToString("n2");
             }
             else
@@ -278,7 +289,7 @@ namespace BCM_Automation_SAGE.FORMS
                         {
 
                             int InvoiceID = Convert.ToInt32(dgKPI.Rows[i].Cells["Invoice ID"].Value);
-                            double P4PRebateAmt = Convert.ToInt32(dgKPI.Rows[i].Cells["P4P Amount"].Value);
+                            double P4PRebateAmt = Convert.ToDouble(dgKPI.Rows[i].Cells["P4P Amount"].Value);
 
                             SQL = "INSERT INTO [dbo].[WIZ_BMCL_P4P_REBATES_APPLIED] ([InvoiceID],[P4PRebateAmt]) VALUES("+ InvoiceID + "," + P4PRebateAmt + ")";
 
@@ -316,6 +327,7 @@ namespace BCM_Automation_SAGE.FORMS
 
             if (DT.Rows.Count > 0)
             {
+                creditNote_(DT);
                 int CustID, InvID = 0;
                 string ItemName, ItemCode = string.Empty;
                 double Amt = 0;
@@ -333,6 +345,53 @@ namespace BCM_Automation_SAGE.FORMS
                 }
             }
 
+        }
+
+        private void creditNote_(DataTable DT)
+        {
+            CreditNote CN = new CreditNote();
+            CN.Customer = new Customer((int)DT.Rows[0]["Cust ID"]);
+            CN.InvoiceDate = DateTime.Now;// choose to set the 
+
+            OrderDetail OD = new OrderDetail();
+
+            foreach (DataRow r in DT.Rows)
+            {
+                OD = new OrderDetail();
+                CN.Detail.Add(OD);
+                OD.UserFields["ucIDInvTxCMItemCode"] = r["Code"].ToString();
+                OD.UserFields["ucIDInvTxCMItemDesc"] = r["Description_1"].ToString();
+                OD.GLAccount = new GLAccount(P4PGLAccount);
+                OD.Quantity = 1;
+                OD.TaxType = new TaxRate(P4PTaxRate);
+                OD.ToProcess = OD.Quantity;
+                OD.UnitSellingPrice = Convert.ToDouble(r["Amount"].ToString());
+            }
+
+            CN.Process();
+        }
+
+        private void creditNote(int CustID, Double Amt, int InvID, string ItemCode, string ItemName, int GLAccount, int TaxRate)
+        {
+            //MessageBox.Show(GLAccount.ToString());
+            CreditNote CN = new CreditNote();
+            CN.Customer = new Customer(CustID);
+            CN.InvoiceDate = DateTime.Now;// choose to set the 
+
+            OrderDetail OD = new OrderDetail();
+
+            OD = new OrderDetail();
+            //OD.UserFields["ItemCode"] = ItemCode;
+            //OD.UserFields["Name"] = ItemName;
+            CN.Detail.Add(OD);
+            OD.GLAccount = new GLAccount(GLAccount);//Use the GLAccount Item constructor to specify a Account
+            //OD.GLAccount = new GLAccount(;//Use the 
+            OD.Quantity = 1;
+            OD.TaxType = new TaxRate(TaxRate);
+            OD.ToProcess = OD.Quantity;
+            OD.UnitSellingPrice = Amt;
+
+            CN.Process();
         }
 
         private void dtStart_ValueChanged(object sender, EventArgs e)
@@ -363,7 +422,7 @@ namespace BCM_Automation_SAGE.FORMS
             QueryFilter = " convert(varchar(10), I.InvDate, 112) BETWEEN '" + dtStart.Value.ToString("yyyyMMdd", CultureInfo.InvariantCulture) + "' AND '" + dtEnd.Value.ToString("yyyyMMdd", CultureInfo.InvariantCulture) + "' ";
 
             QtyTotal = 0;
-            SQL = "SELECT i.AutoIndex [Invoice ID], i.InvNumber, i.InvDate, i.InvTotExcl, i.InvTotTax, i.InvTotIncl, SUM(l.fQtyLastProcess) [Qty], '' [P4P Amount],  CASE WHEN M.RebatePerCase > 0 THEN SUM(l.fQtyLastProcess) * M.RebatePerCase WHEN M.RebatePercent > 0 THEN  (M.RebatePercent * i.InvTotExcl)/100 END [SCR Amount] FROM InvNum i INNER JOIN _btblInvoiceLines l ON i.AutoIndex = L.iInvoiceID INNER JOIN WIZ_BMCL_SCR_MAPPING M ON I.AccountID = M.CustID  WHERE i.DocType IN(0, 4) AND i.DocState = 4 AND i.AccountID = " + cboCust.SelectedValue + " AND "+ QueryFilter + " AND i.AutoIndex NOT IN (SELECT InvoiceID FROM [dbo].[WIZ_BMCL_P4P_REBATES_APPLIED]) GROUP BY i.AutoIndex, i.InvNumber, i.InvDate, i.InvTotExcl, i.InvTotTax, i.InvTotIncl,  M.RebatePerCase,  M.RebatePercent";
+            SQL = "SELECT i.AutoIndex [Invoice ID], i.InvNumber, i.InvDate, i.InvTotExcl, i.InvTotTax, i.InvTotIncl, SUM(l.fQtyLastProcess) [Qty], '' [P4P Amount],  CASE WHEN ISNULL(M.RebatePerCase,0) > 0 THEN SUM(l.fQtyLastProcess) * ISNULL(M.RebatePerCase,0) WHEN ISNULL(M.RebatePercent,0) > 0 THEN  (ISNULL(M.RebatePercent,0) * i.InvTotExcl)/100 ELSE 0 END [SCR Amount] FROM InvNum i INNER JOIN _btblInvoiceLines l ON i.AutoIndex = L.iInvoiceID LEFT JOIN WIZ_BMCL_SCR_MAPPING M ON I.AccountID = M.CustID  WHERE i.DocType IN(0, 4) AND i.DocState = 4 AND i.AccountID = " + cboCust.SelectedValue + " AND "+ QueryFilter + " AND i.AutoIndex NOT IN (SELECT InvoiceID FROM [dbo].[WIZ_BMCL_P4P_REBATES_APPLIED]) GROUP BY i.AutoIndex, i.InvNumber, i.InvDate, i.InvTotExcl, i.InvTotTax, i.InvTotIncl,  M.RebatePerCase,  M.RebatePercent";
             LoadDataGrid(dgKPI, SQL, "Invoice ID", "P4P Amount");
 
             if (dgKPI.Rows.Count > 0)

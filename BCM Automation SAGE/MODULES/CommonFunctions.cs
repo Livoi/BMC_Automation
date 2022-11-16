@@ -97,28 +97,7 @@ namespace BCM_Automation_SAGE.MODULES
             
         }
 
-        public static void creditNote(int CustID, Double Amt, int InvID, string ItemCode, string ItemName, int GLAccount, int TaxRate)
-        {
-            //MessageBox.Show(GLAccount.ToString());
-            CreditNote CN = new CreditNote();
-            CN.Customer = new Customer(CustID);
-            CN.InvoiceDate = DateTime.Now;// choose to set the 
-
-            OrderDetail OD = new OrderDetail();
-
-            OD = new OrderDetail();
-            //OD.UserFields["ItemCode"] = ItemCode;
-            //OD.UserFields["Name"] = ItemName;
-            CN.Detail.Add(OD);
-            OD.GLAccount = new GLAccount(GLAccount);//Use the GLAccount Item constructor to specify a Account
-            //OD.GLAccount = new GLAccount(;//Use the 
-            OD.Quantity = 1;
-            OD.TaxType = new TaxRate(TaxRate);
-            OD.ToProcess = OD.Quantity;
-            OD.UnitSellingPrice = Amt;
-
-            CN.Process();
-        }
+        
 
         public static double ConvertToMtr(string FromUnit, double Qty)
         {
